@@ -23,7 +23,8 @@ public class SecurityConfig {
         http.csrf(csrf->csrf.disable())
                 .cors(cors->cors.disable())
                 .authorizeHttpRequests(auth->auth.requestMatchers("/home/**").authenticated()
-                        .requestMatchers("/auth/login").permitAll().anyRequest()
+                        .requestMatchers("/auth/login").permitAll()
+                        .requestMatchers("/actuator/health").permitAll().anyRequest()
                         .authenticated())
                         .exceptionHandling(ex->ex.authenticationEntryPoint(point))
                         .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

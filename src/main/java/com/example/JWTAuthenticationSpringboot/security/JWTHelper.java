@@ -3,6 +3,7 @@ package com.example.JWTAuthenticationSpringboot.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -13,11 +14,12 @@ import java.util.function.Function;
 
 @Component
 public class JWTHelper {
-    //requirement :
-    public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
+    //requirement : token validity in milliseconds (default 30 minutes)
+    @Value("${app.jwt.expiration-ms:1800000}")
+    private long jwtExpirationMs;
 
-    //    public static final long JWT_TOKEN_VALIDITY =  60;
-    private String secret = "afafasfafafasfasfasfafacasdasfasxASFACASDFACASDFASFASFDAFASFASDAADSCSDFADCVSGCFVADXCcadwavfsfarvf";
+    @Value("${app.jwt.secret}")
+    private String secret;
 
     //retrieve username from jwt token
     public String getUsernameFromToken(String token) {
@@ -59,8 +61,8 @@ public class JWTHelper {
     private String doGenerateToken(Map<String, Object> claims, String subject) {
 
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
-                .signWith(SignatureAlgorithm.HS512, secret).compact();
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .signWith(SignatureAlgorithm.HS256, secret).compact();
     }
 
     //validate token
