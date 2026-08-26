@@ -17,4 +17,7 @@ public class User {
     private String userId;
     private String name;
     private String email;
+    // BCrypt-encoded password used to authenticate against this Oracle-backed
+    // user record (see UserService#loadUserByUsername).
+    private String password;
 }
