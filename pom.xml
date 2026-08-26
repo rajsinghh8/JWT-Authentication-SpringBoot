@@ -45,14 +45,6 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- PostgreSQL driver used for local sandbox/fallback database when an Oracle
-		     instance is not reachable via app.datasource configuration -->
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
