@@ -1,5 +1,6 @@
 package com.example.JWTAuthenticationSpringboot.config;
 
+import com.example.JWTAuthenticationSpringboot.security.JWTAccessDeniedHandler;
 import com.example.JWTAuthenticationSpringboot.security.JWTAthenticationEntryPoint;
 import com.example.JWTAuthenticationSpringboot.security.JWTAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,8 @@ public class SecurityConfig {
     private JWTAthenticationEntryPoint point;
     @Autowired
     private JWTAuthenticationFilter filter;
+    @Autowired
+    private JWTAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -23,10 +26,14 @@ public class SecurityConfig {
         http.csrf(csrf->csrf.disable())
                 .cors(cors->cors.disable())
                 .authorizeHttpRequests(auth->auth.requestMatchers("/home/**").authenticated()
-                        .requestMatchers("/auth/login").permitAll()
-                        .requestMatchers("/actuator/health").permitAll().anyRequest()
+                        .requestMatchers("/auth/login", "/auth/register").permitAll()
+                        .requestMatchers("/actuator/health").permitAll()
+                        // Admin-only user management (role changes, user listing).
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .anyRequest()
                         .authenticated())
-                        .exceptionHandling(ex->ex.authenticationEntryPoint(point))
+                        .exceptionHandling(ex->ex.authenticationEntryPoint(point)
+                                .accessDeniedHandler(accessDeniedHandler))
                         .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.addFilterBefore(filter,UsernamePasswordAuthenticationFilter.class);
         return http.build();

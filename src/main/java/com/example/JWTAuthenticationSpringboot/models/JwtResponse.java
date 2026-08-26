@@ -11,4 +11,7 @@ import lombok.*;
 public class JwtResponse {
     private String jwtToken;
     private String username;
+    // Included so clients can immediately know the authenticated/registered
+    // user's role without decoding the JWT.
+    private Role role;
 }

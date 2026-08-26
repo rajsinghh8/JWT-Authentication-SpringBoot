@@ -2,7 +2,12 @@ package com.example.JWTAuthenticationSpringboot.config;
 
 import com.example.JWTAuthenticationSpringboot.models.JwtRequest;
 import com.example.JWTAuthenticationSpringboot.models.JwtResponse;
+import com.example.JWTAuthenticationSpringboot.models.RegisterRequest;
+import com.example.JWTAuthenticationSpringboot.models.Role;
+import com.example.JWTAuthenticationSpringboot.models.User;
 import com.example.JWTAuthenticationSpringboot.security.JWTHelper;
+import com.example.JWTAuthenticationSpringboot.services.UserService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +33,9 @@ public class AuthController {
     @Autowired
     private JWTHelper helper;
 
+    @Autowired
+    private UserService userService;
+
     private Logger logger = LoggerFactory.getLogger(AuthController.class);
 
 
@@ -42,8 +50,37 @@ public class AuthController {
 
         JwtResponse response = JwtResponse.builder()
                 .jwtToken(token)
-                .username(userDetails.getUsername()).build();
+                .username(userDetails.getUsername())
+                .role(extractRole(userDetails))
+                .build();
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // Self-service registration. Always creates the new account with the
+    // USER role (see UserService#registerUser) - registrants cannot grant
+    // themselves ADMIN. Duplicate emails/usernames are rejected with 409 by
+    // GlobalExceptionHandler; invalid payloads are rejected with 400.
+    @PostMapping("/register")
+    public ResponseEntity<JwtResponse> register(@Valid @RequestBody RegisterRequest request) {
+        User created = userService.registerUser(request);
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(created.getEmail());
+        String token = this.helper.generateToken(userDetails);
+
+        JwtResponse response = JwtResponse.builder()
+                .jwtToken(token)
+                .username(created.getEmail())
+                .role(created.getRole())
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    private Role extractRole(UserDetails userDetails) {
+        return userDetails.getAuthorities().stream()
+                .findFirst()
+                .map(authority -> authority.getAuthority().replace("ROLE_", ""))
+                .map(Role::valueOf)
+                .orElse(Role.USER);
     }
 
     private void doAuthenticate(String email, String password) {
