@@ -25,13 +25,15 @@ public class SecurityConfig {
         // configuration
         http.csrf(csrf->csrf.disable())
                 .cors(cors->cors.disable())
-                .authorizeHttpRequests(auth->auth.requestMatchers("/home/**").authenticated()
+                .authorizeHttpRequests(auth->auth
                         // Refresh/logout must be reachable without a (possibly expired)
                         // access token - they carry their own refresh-token credential.
                         .requestMatchers("/auth/login", "/auth/register", "/auth/refresh-token", "/auth/logout").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
-                        // Admin-only user management (role changes, user listing).
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        // User listings, including the legacy /home/user endpoint,
+                        // contain account information and are admin-only.
+                        .requestMatchers("/admin/**", "/home/user").hasRole("ADMIN")
+                        .requestMatchers("/home/**").authenticated()
                         .anyRequest()
                         .authenticated())
                         .exceptionHandling(ex->ex.authenticationEntryPoint(point)

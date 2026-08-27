@@ -1,6 +1,6 @@
 package com.example.JWTAuthenticationSpringboot.controllers;
 
-import com.example.JWTAuthenticationSpringboot.models.User;
+import com.example.JWTAuthenticationSpringboot.models.UserResponse;
 import com.example.JWTAuthenticationSpringboot.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,11 +16,13 @@ public class HomeController {
     @Autowired
     private UserService userService;
 
-    // localhost:8081/home/user
+    // User listing is restricted to ADMIN in SecurityConfig. Return the
+    // password-free response type so credential hashes are never serialized.
     @GetMapping("/user")
-    public List<User> getUser(){
-        System.out.println("Getting users");
-        return userService.getUsers();
+    public List<UserResponse> getUser(){
+        return userService.getUsers().stream()
+                .map(UserResponse::fromUser)
+                .toList();
     }
 
     @GetMapping("/current-user")

@@ -13,6 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -33,42 +34,44 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         // Authorization=Bearer <token>
 
         String requestHeader = request.getHeader("Authorization");
-        logger.info(" Header :  {}", requestHeader);
         String username = null;
         String token = null;
 
-        if (requestHeader != null && requestHeader.startsWith("Bearer")) {
+        if (requestHeader != null && requestHeader.startsWith("Bearer ")) {
             //looking good
             token = requestHeader.substring(7);
             try {
                 username = this.jwtHelper.getUsernameFromToken(token);
             } catch (IllegalArgumentException e) {
                 logger.info("Illegal Argument while fetching the username !!");
-                e.printStackTrace();
+                logger.debug("Unable to read username from JWT", e);
             } catch (ExpiredJwtException e) {
-                logger.info("Given jwt token is expired !!");
-                e.printStackTrace();
+                logger.info("Given JWT token is expired");
+                logger.debug("Expired JWT received", e);
             } catch (MalformedJwtException e) {
-                logger.info("Some changed has done in token !! Invalid Token");
-                e.printStackTrace();
+                logger.info("Invalid JWT received");
+                logger.debug("Malformed JWT received", e);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.debug("Unable to read username from JWT", e);
             }
         } else {
             logger.info("Invalid Header Value !! ");
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            //fetch user detail from username
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-            Boolean validateToken = this.jwtHelper.validateToken(token, userDetails);
-            if (validateToken) {
-                //set the authentication
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } else {
-                logger.info("Validation fails !!");
+            try {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+                Boolean validateToken = this.jwtHelper.validateToken(token, userDetails);
+                if (validateToken) {
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    logger.info("JWT validation failed");
+                }
+            } catch (UsernameNotFoundException e) {
+                // A token for a deleted account is not an authenticated request.
+                logger.info("JWT subject no longer exists");
             }
         }
         filterChain.doFilter(request, response);

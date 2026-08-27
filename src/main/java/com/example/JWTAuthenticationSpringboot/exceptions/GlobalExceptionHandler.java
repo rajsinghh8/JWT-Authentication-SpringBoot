@@ -2,6 +2,7 @@ package com.example.JWTAuthenticationSpringboot.exceptions;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -11,9 +12,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-// Centralized error responses for the registration / admin user-management
-// endpoints. Intentionally does not touch BadCredentialsException handling,
-// which AuthController already handles for the existing /auth/login flow.
+// Centralized error responses for authentication and user-management endpoints.
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -24,6 +23,14 @@ public class GlobalExceptionHandler {
                 fieldErrors.put(error.getField(), error.getDefaultMessage()));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorBody(HttpStatus.BAD_REQUEST,
                 "Validation failed", fieldErrors));
+    }
+
+    // Authentication providers intentionally use the same response for an
+    // unknown username and a wrong password, preventing account enumeration.
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Map<String, Object>> handleAuthenticationFailure(AuthenticationException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorBody(HttpStatus.UNAUTHORIZED,
+                "Invalid email or password", null));
     }
 
     @ExceptionHandler(DuplicateEmailException.class)
