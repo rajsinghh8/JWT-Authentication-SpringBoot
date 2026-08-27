@@ -9,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString
+@ToString(exclude = "password")
 public class JwtRequest {
     @NotBlank(message = "Email is required")
     @Email(message = "Email must be valid")

@@ -1,5 +1,6 @@
 package com.example.JWTAuthenticationSpringboot.models;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -18,6 +19,7 @@ public class User {
     @Id
     private String userId;
     private String name;
+    @Column(nullable = false, unique = true)
     private String email;
     // BCrypt-encoded password used to authenticate against this Oracle-backed
     // user record (see UserService#loadUserByUsername).

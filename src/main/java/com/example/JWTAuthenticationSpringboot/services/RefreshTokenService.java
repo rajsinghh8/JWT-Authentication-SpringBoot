@@ -70,11 +70,14 @@ public class RefreshTokenService {
         return token;
     }
 
-    // Revokes (deletes) the refresh token so it can no longer be used, e.g.
-    // on logout. Silently no-ops if the token is unknown/already revoked.
+    // Revokes a valid refresh token on logout. Unknown and expired tokens are
+    // reported to the caller instead of returning a misleading success result.
     @Transactional
     public void deleteByToken(String token) {
-        refreshTokenRepository.findByToken(token)
-                .ifPresent(refreshTokenRepository::delete);
+        RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
+                .orElseThrow(() -> new TokenRefreshException(token,
+                        "Refresh token is not recognized. Please sign in again."));
+        verifyExpiration(refreshToken);
+        refreshTokenRepository.delete(refreshToken);
     }
 }

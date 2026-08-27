@@ -27,7 +27,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString
+@ToString(exclude = {"token", "user"})
 public class RefreshToken {
 
     @Id

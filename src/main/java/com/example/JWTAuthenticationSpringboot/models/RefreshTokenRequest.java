@@ -15,7 +15,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString
+@ToString(exclude = "refreshToken")
 public class RefreshTokenRequest {
     @NotBlank(message = "refreshToken is required")
     private String refreshToken;
