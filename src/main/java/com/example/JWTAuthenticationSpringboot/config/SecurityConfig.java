@@ -28,12 +28,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth->auth
                         // Refresh/logout must be reachable without a (possibly expired)
                         // access token - they carry their own refresh-token credential.
-                        .requestMatchers("/auth/login", "/auth/register", "/auth/refresh-token", "/auth/logout").permitAll()
+                        .requestMatchers("/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/refresh-token", "/api/v1/auth/logout").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
-                        // User listings, including the legacy /home/user endpoint,
-                        // contain account information and are admin-only.
-                        .requestMatchers("/admin/**", "/home/user").hasRole("ADMIN")
-                        .requestMatchers("/home/**").authenticated()
+                        // User listings contain account information and are admin-only.
+                        .requestMatchers("/api/v1/admin/**", "/api/v1/home/user").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/home/**").authenticated()
                         // Let Spring MVC produce a meaningful 404 for paths that do not
                         // exist instead of treating an unknown route as a protected API.
                         .anyRequest()

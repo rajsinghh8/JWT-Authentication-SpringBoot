@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("${app.api.prefix}/auth")
 public class AuthController {
     @Autowired
     private UserDetailsService userDetailsService;

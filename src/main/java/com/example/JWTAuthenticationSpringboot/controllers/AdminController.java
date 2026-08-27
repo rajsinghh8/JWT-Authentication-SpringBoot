@@ -16,7 +16,7 @@ import java.util.List;
 // ROLE_ADMIN in SecurityConfig, so every endpoint here already runs with an
 // authenticated ADMIN principal.
 @RestController
-@RequestMapping("/admin")
+@RequestMapping("${app.api.prefix}/admin")
 public class AdminController {
 
     @Autowired

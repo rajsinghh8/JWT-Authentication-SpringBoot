@@ -11,7 +11,7 @@ import java.security.Principal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/home")
+@RequestMapping("${app.api.prefix}/home")
 public class HomeController {
     @Autowired
     private UserService userService;
