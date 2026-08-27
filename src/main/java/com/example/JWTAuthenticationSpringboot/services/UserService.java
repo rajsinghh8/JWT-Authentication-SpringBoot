@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 // Backs both the /home user listing endpoints and Spring Security
@@ -58,14 +59,15 @@ public class UserService implements UserDetailsService {
     // duplicates are rejected. New users always get the USER role - callers
     // cannot elevate themselves to ADMIN via registration.
     public User registerUser(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
+        String email = normalizeEmail(request.getEmail());
+        if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new DuplicateEmailException(request.getEmail());
         }
 
         User user = new User(
                 UUID.randomUUID().toString(),
                 request.getName(),
-                request.getEmail(),
+                email,
                 passwordEncoder.encode(request.getPassword()),
                 Role.USER);
 
@@ -93,7 +95,8 @@ public class UserService implements UserDetailsService {
     // path-based authorization (see SecurityConfig) can enforce it.
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
+        String normalizedEmail = normalizeEmail(email);
+        User user = userRepository.findByEmailIgnoreCase(normalizedEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("No user found with email " + email));
 
         Role role = user.getRole() != null ? user.getRole() : Role.USER;
@@ -103,5 +106,9 @@ public class UserService implements UserDetailsService {
                 .password(user.getPassword())
                 .authorities(Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name())))
                 .build();
+    }
+
+    private String normalizeEmail(String email) {
+        return email.toLowerCase(Locale.ROOT);
     }
 }

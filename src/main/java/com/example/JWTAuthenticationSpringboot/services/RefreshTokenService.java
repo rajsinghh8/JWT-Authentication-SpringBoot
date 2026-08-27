@@ -40,7 +40,7 @@ public class RefreshTokenService {
     // refresh token is valid per user at a time.
     @Transactional
     public RefreshToken createRefreshToken(String email) {
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new UsernameNotFoundException("No user found with email " + email));
 
         refreshTokenRepository.findByUser(user).ifPresent(refreshTokenRepository::delete);
