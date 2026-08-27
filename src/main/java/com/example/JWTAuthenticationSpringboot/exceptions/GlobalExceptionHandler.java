@@ -41,6 +41,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorBody(HttpStatus.BAD_REQUEST, ex.getMessage(), null));
     }
 
+    // Unknown, already-used/rotated, or expired refresh token supplied to
+    // /auth/refresh-token or /auth/logout.
+    @ExceptionHandler(TokenRefreshException.class)
+    public ResponseEntity<Map<String, Object>> handleTokenRefresh(TokenRefreshException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorBody(HttpStatus.UNAUTHORIZED, ex.getMessage(), null));
+    }
+
     private Map<String, Object> errorBody(HttpStatus status, String message, Map<String, String> fieldErrors) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", Instant.now().toString());

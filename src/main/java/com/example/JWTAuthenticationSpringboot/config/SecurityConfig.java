@@ -26,7 +26,9 @@ public class SecurityConfig {
         http.csrf(csrf->csrf.disable())
                 .cors(cors->cors.disable())
                 .authorizeHttpRequests(auth->auth.requestMatchers("/home/**").authenticated()
-                        .requestMatchers("/auth/login", "/auth/register").permitAll()
+                        // Refresh/logout must be reachable without a (possibly expired)
+                        // access token - they carry their own refresh-token credential.
+                        .requestMatchers("/auth/login", "/auth/register", "/auth/refresh-token", "/auth/logout").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         // Admin-only user management (role changes, user listing).
                         .requestMatchers("/admin/**").hasRole("ADMIN")
