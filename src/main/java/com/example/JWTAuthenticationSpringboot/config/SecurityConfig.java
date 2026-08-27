@@ -34,8 +34,10 @@ public class SecurityConfig {
                         // contain account information and are admin-only.
                         .requestMatchers("/admin/**", "/home/user").hasRole("ADMIN")
                         .requestMatchers("/home/**").authenticated()
+                        // Let Spring MVC produce a meaningful 404 for paths that do not
+                        // exist instead of treating an unknown route as a protected API.
                         .anyRequest()
-                        .authenticated())
+                        .permitAll())
                         .exceptionHandling(ex->ex.authenticationEntryPoint(point)
                                 .accessDeniedHandler(accessDeniedHandler))
                         .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
