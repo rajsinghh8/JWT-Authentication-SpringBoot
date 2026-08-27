@@ -9,6 +9,7 @@ import com.example.JWTAuthenticationSpringboot.models.User;
 import com.example.JWTAuthenticationSpringboot.repositories.UserRepository;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -33,6 +34,15 @@ public class UserService implements UserDetailsService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Value("${app.seed.admin-password}")
+    private String seedAdminPassword;
+
+    @Value("${app.seed.user-one-password}")
+    private String seedUserOnePassword;
+
+    @Value("${app.seed.user-two-password}")
+    private String seedUserTwoPassword;
+
     // Seed the (now database-backed) users table with the original demo
     // users the first time the application starts against an empty database.
     // The first seeded account is granted ADMIN so there is always a way to
@@ -41,13 +51,13 @@ public class UserService implements UserDetailsService {
     public void seed() {
         if (userRepository.count() == 0) {
             userRepository.save(new User(UUID.randomUUID().toString(), "Prathiksha Kini",
-                    "gpkini2002@gmail.com", passwordEncoder.encode("abc"), Role.ADMIN));
+                    "gpkini2002@gmail.com", passwordEncoder.encode(seedAdminPassword), Role.ADMIN));
             userRepository.save(new User(UUID.randomUUID().toString(), "Padmini Kini",
-                    "kinipadmini@gmail.com", passwordEncoder.encode("123"), Role.USER));
+                    "kinipadmini@gmail.com", passwordEncoder.encode(seedUserOnePassword), Role.USER));
             userRepository.save(new User(UUID.randomUUID().toString(), "Mahalasa Kini",
-                    "kinimahalasa@gmail.com", passwordEncoder.encode("password"), Role.USER));
+                    "kinimahalasa@gmail.com", passwordEncoder.encode(seedUserTwoPassword), Role.USER));
             userRepository.save(new User(UUID.randomUUID().toString(), "Gurudath Kini",
-                    "gurukini@gmail.com", passwordEncoder.encode("password"), Role.USER));
+                    "gurukini@gmail.com", passwordEncoder.encode(seedUserTwoPassword), Role.USER));
         }
     }
 
